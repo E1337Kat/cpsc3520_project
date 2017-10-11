@@ -61,7 +61,7 @@ class Baddies extends Entity {
     }
 
     @Override
-    public void update(float delta, Entity intersect)
+    public void update(float delta)
     {
         switch (state)
         {

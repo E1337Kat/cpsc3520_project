@@ -90,7 +90,7 @@ public class Background extends Entity {
     }
     
     @Override
-    public void update(float delta, Entity intersect) {
+    public void update(float delta) {
         
         //if (state == State.LEVEL) {
         
