@@ -1,9 +1,11 @@
+package Entities;
+
 
 import org.lwjgl.util.Rectangle;
 
 
 
-class Entity
+public class Entity
 {
     /**
      * For collision. It represents the side of a 2D object.

@@ -1,10 +1,12 @@
+package Entities;
+
 import java.util.Random;
 import org.lwjgl.util.Rectangle;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.Display;
 
-class Ground extends Entity
+public class Ground extends Entity
 {
 
     private String intersect_side;

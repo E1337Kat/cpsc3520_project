@@ -1,3 +1,5 @@
+package Entities;
+
 import java.util.HashSet;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;

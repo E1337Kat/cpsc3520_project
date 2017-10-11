@@ -1,3 +1,9 @@
+package Main;
+
+import Entities.Player;
+import Entities.Ground;
+import Entities.Entity;
+import Entities.Background;
 import org.lwjgl.Sys;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;

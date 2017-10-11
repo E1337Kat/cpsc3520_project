@@ -1,3 +1,5 @@
+package Entities;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.Rectangle;
