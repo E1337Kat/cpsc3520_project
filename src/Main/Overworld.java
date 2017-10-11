@@ -17,13 +17,16 @@
 package Main;
 
 import Entities.Background;
+import Entities.Entity;
 import Entities.Ground;
 import Entities.Player;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import org.lwjgl.Sys;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL11;
 
 /**
  *
@@ -39,6 +42,7 @@ public class Overworld extends Scene{
     private static Background background3;
     private static Background background4;
     private static Player player;
+    private static List<Ground> ground;
     
     
     public Overworld() {
@@ -52,7 +56,7 @@ public class Overworld extends Scene{
         background4 = new Background(4, PATH_TO_BG + "parallax-mountain-foreground-trees.png");
 
         // Load Ground tiles
-        List<Ground> ground = new LinkedList<>();
+        ground = new LinkedList<>();
         Random rand = new Random();
         for (int i = 0; i < 10; i++ ) {
             ground.add (new Ground(i, rand, 64));
@@ -71,17 +75,88 @@ public class Overworld extends Scene{
         
         player.setEntities(ground);
 
-        int x1 = player.getX();
-        int y1 = player.getY();
-        
-        long time = (Sys.getTime()*1000)/Sys.getTimerResolution(); // ms
-        long delta = 1000/100;  // Fixed delta of 16.6
+//        int x1 = player.getX();
+//        int y1 = player.getY();
+//        
+//        long time = (Sys.getTime()*1000)/Sys.getTimerResolution(); // ms
+//        long delta = 1000/100;  // Fixed delta of 16.6
     }
     
     @Override
     public boolean drawFrame(float delta) {
+        
+        
+        
+        
+        // Update the background tiles
+        background0.update(delta);
+        background1.update(delta);
+        background2.update(delta);
+        background3.update(delta);
+        background4.update(delta);
+
         player.update(delta);
-        Display.update();
+
+        // Update the other entities
+        for  (Ground g : ground) {
+            g.update(delta);
+        }
+
+        //Display.update();
+        
+        // After updating and before drawing, we take the player's 
+        // position and we 
+        float translate_y = player.getY() - Display.getHeight() / 2;
+        float translate_x = player.getX() + Display.getWidth() / 2;
+        //Display.sync(TARGET_FPS);
+
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+
+
+
+        // 50% Parallax scrolling
+        // Pushes current matrix used for screen operations, then
+        // translates it by half. 
+        GL11.glPushMatrix();
+        GL11.glTranslatef(translate_x / 2, -translate_y / 2, 0);
+        
+        // Draw the background
+        background0.draw();
+        background1.draw();
+        background2.draw();
+        background3.draw();
+        background4.draw();
+
+        GL11.glPopMatrix();
+        // END 50% Parallax
+
+        // Can add additional stuff between matrix stuff as needed.
+
+        // 100% Parallax scrolling
+        // 
+        GL11.glPushMatrix();
+        GL11.glTranslatef(translate_x, -translate_y /2, 0);
+
+
+        // Draw the other entities
+        for  (Entity e : ground) {
+            e.draw();
+        }
+
+        // Draw the Player
+        player.draw();
+
+        GL11.glPopMatrix();
+        // END 100% Parallax
+
+        if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
     
 }

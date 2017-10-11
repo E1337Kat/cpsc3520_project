@@ -43,7 +43,7 @@ public class Entity
                                 OTHER
     };
     
-    public void update(float delta, Entity intersect)
+    public void update(float delta)
     {
         
     }

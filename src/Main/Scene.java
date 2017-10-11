@@ -25,7 +25,7 @@ import org.lwjgl.opengl.Display;
 public abstract class Scene
 {
     private boolean doExit = false;
-    private int targetFPS = 60;
+    private int targetFPS = 100;
 
     /**
      * return false if the game should be quit
@@ -74,13 +74,13 @@ public abstract class Scene
             
             
             
-            long time2 = (Sys.getTime()*1000)/
+            long currloop = (Sys.getTime()*1000)/
                 Sys.getTimerResolution(); // ms
             
-            long time = (Sys.getTime()*1000 / Sys.getTimerResolution());
+            //long time = (Sys.getTime()*1000 / Sys.getTimerResolution());
             
             
-            long passed = time2-time;
+            long passed = currloop-lastloop;
             
 
             long accumulator =+ passed;
