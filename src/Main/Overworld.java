@@ -20,10 +20,11 @@ import Entities.Background;
 import Entities.Entity;
 import Entities.Ground;
 import Entities.Player;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import org.lwjgl.Sys;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
@@ -60,26 +61,10 @@ public class Overworld extends Scene{
         Random rand = new Random();
         for (int i = 0; i < 10; i++ ) {
             ground.add (new Ground(i, rand, 64));
-//            int k;
-//            if (i==0)
-//                k = 0;
-//            else
-//                k = ground.get(i-1).getHeck();
-//            int j = ground.get(i).getHeck();
-//            //int k = ground.get(i-1).getHeck();
-//            System.out.println("Distance between ground " +
-//                            (i-1) + " & " + i +
-//                            " is " + 
-//                            ((i*(j+(j*100))) - ( (i-1)*(k+(k*100))+500)));
         }
         
         player.setEntities(ground);
 
-//        int x1 = player.getX();
-//        int y1 = player.getY();
-//        
-//        long time = (Sys.getTime()*1000)/Sys.getTimerResolution(); // ms
-//        long delta = 1000/100;  // Fixed delta of 16.6
     }
     
     @Override
@@ -101,8 +86,6 @@ public class Overworld extends Scene{
         for  (Ground g : ground) {
             g.update(delta);
         }
-
-        //Display.update();
         
         // After updating and before drawing, we take the player's 
         // position and we 
