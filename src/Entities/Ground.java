@@ -16,53 +16,36 @@
  */
 package Entities;
 
-import java.util.Random;
 import org.lwjgl.util.Rectangle;
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 
 public class Ground extends Entity {
 
     private final int groundNum;
+    private int heck;
 
-    public Ground(int place, Random rand, int playerHeight)
+    public Ground(int place, float rand, float playerHeight)
     {
-        super("res/ground.png", 
-                ((int)(10*rand.nextFloat())+(place))*256, 
-                (Display.getHeight() - (((int)(10*rand.nextFloat())+(place))*10)), 
-                256, 
-                512);
         groundNum = place;
         
-//        heck = ((int)(10*rand.nextFloat())+(place));
-//        System.out.println("Ground entity generated with rand: " + heck);
-//        if ( heck > 3+(2*place)) {
-//            heck = 3+((2*place));
+        this.heck = ((int)(10*rand)+(place));
+//        System.out.println("Ground entity generated with rand: " + this.heck);
+//        if ( this.heck > 3+(2*place)) {
+//            this.heck = 3+((2*place));
 //        }
-//        
         
-    }
-
-
-    @Override
-    public void update(float delta)
-    {
-        if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
-            super.translate((int)(.50*delta), 0);
-            
-        }
-
-        if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
-            super.translate((int)(-.50*delta), 0);
-        }
-        
-        
+        loadTexture("res/sprites/ground.png");
+        hitbox = new Rectangle(place*256+ heck*10, 
+                                Display.getHeight(), //(int)(Display.getHeight() - (this.heck*10)), 
+                                256, 
+                                512);
     }
     
     @Override
     public Entity.E_TYPE getEntityType() {
         return E_TYPE.GROUND;
     }
+    
     
     /** 
      * Returns the side of a 2D object the provided object intersects with.
@@ -74,13 +57,15 @@ public class Ground extends Entity {
 //            return null;
 //        } else {
 //            
-//            Rectangle inter = new Rectangle();
-//            box.intersection(other, inter);
+//            Rectangle inter = super.intersection(other);
 //            
 //            // check other is left edge.
-//            //if (inter.getX() + inter.getWidth() <= super.getX() + inter.getWidth()) {
-//                
-//           // }
+//            if (inter.getX() + inter.getWidth() <= super.getX() + super.getWidth()/2) {
+//                // Intersection is left side of ground
+//                if (inter.getY() + inter.getHeight() <= super.getY() + super.getHeight()/2) {
+//                    // Player is top side of ground 
+//                }
+//            }
 //            
 //            // OLD CODE; REWRITE ABOVE.
 //            // Other is left of ground (on edge)
@@ -152,14 +137,5 @@ public class Ground extends Entity {
      */
     public int getY () {
         return super.getY();
-    }
-    
-    /**
-     * Gets the rectangle for this object
-     * @return box
-     */
-    public Rectangle getRectangle () {
-        return super.getRectangle();
-    }
-    
+    }    
 }

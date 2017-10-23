@@ -44,6 +44,7 @@ public class Entity {
                                 PLAYER,
                                 GROUND,
                                 NPC,
+                                PICKUP,
                                 OTHER
     };
     
@@ -81,7 +82,8 @@ public class Entity {
         loadTexture(texturePath);
         hitbox = new Rectangle(x, y,
                                width,
-                               (int)(width * texture.getImageHeight()* 1.0f/texture.getImageWidth()));
+                               height);
+                               //(int)(width * texture.getImageHeight()* 1.0f/texture.getImageWidth()));
     }
     
     /**
@@ -109,7 +111,7 @@ public class Entity {
         if (animated) {
             try {
                 texture = TextureLoader.getTexture("PNG",
-                                                   ResourceLoader.getResourceAsStream("res/heck.png"));
+                                                   ResourceLoader.getResourceAsStream(path));
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException("Failed to load texture.");
@@ -276,14 +278,6 @@ public class Entity {
 
     public boolean isActive() {
         return active;
-    }
-    
-    /**
-     * Gets the rectangle for this object
-     * @return box
-     */
-    public Rectangle getRectangle () {
-        return hitbox;
     }
     
     public E_TYPE getEntityType () {

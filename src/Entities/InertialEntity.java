@@ -52,6 +52,11 @@ public abstract class InertialEntity extends Entity
         init(mass);
     }
     
+    public InertialEntity(float spriteSize, float mass, String pngpath, int x, int y) {
+        super(spriteSize,x,y, pngpath);
+        init(mass);
+    }
+    
     private void init(float mass)
     {
         velocity = new Vector2f(0,0);
@@ -92,6 +97,23 @@ public abstract class InertialEntity extends Entity
     public void addGravity()
     {                                                 
         addForce((Vector2f)new Vector2f(GRAVITY).scale(1f/mass));
+    }
+    
+    public void addFriction(float fric_coeff) {
+        
+        Vector2f f = new Vector2f();
+        velocity.normalise(f);
+        f.scale(fric_coeff);
+        addForce(f);
+    }
+    
+    public void removeFriction(float fric_coeff) {
+        velocity.scale(1/fric_coeff);
+        velocity.scale(velocity.length());
+    }
+    
+    public void addForce(float x, float y) {
+        addForce(new Vector2f(x,y));
     }
 
     public void addForce(Vector2f force)
