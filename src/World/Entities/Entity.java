@@ -338,37 +338,37 @@ public abstract class Entity extends WorldObject {
         return active;
     }
     
-    /**
-     * Gets the Entities x coordinate.
-     * @return The Entity's x coordinate.
-     */
-    public final int getX() {
-        return hitbox.getX();
-    }
-    
-    /**
-     * Gets the Entities y coodinate.
-     * @return The Entity's y coordinate.
-     */
-    public final int getY() {
-        return hitbox.getY();
-    }
-    
-    /**
-     * Gets the Entities width.
-     * @return The Entity's width.
-     */
-    public final int getWidth() {
-        return hitbox.getWidth();
-    }
-    
-    /**
-     * Gets the Entities height.
-     * @return The Entity's height.
-     */
-    public final int getHeight() {
-        return hitbox.getHeight();
-    }
+//    /**
+//     * Gets the Entities x coordinate.
+//     * @return The Entity's x coordinate.
+//     */
+//    public final int getX() {
+//        return hitbox.getX();
+//    }
+//    
+//    /**
+//     * Gets the Entities y coordinate.
+//     * @return The Entity's y coordinate.
+//     */
+//    public final int getY() {
+//        return hitbox.getY();
+//    }
+//    
+//    /**
+//     * Gets the Entities width.
+//     * @return The Entity's width.
+//     */
+//    public final int getWidth() {
+//        return hitbox.getWidth();
+//    }
+//    
+//    /**
+//     * Gets the Entities height.
+//     * @return The Entity's height.
+//     */
+//    public final int getHeight() {
+//        return hitbox.getHeight();
+//    }
     
     //*******PROTECTED MEMBERS*******//
 

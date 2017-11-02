@@ -19,6 +19,7 @@ package World.Statics;
 import World.Entities.Entity;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.Rectangle;
@@ -27,7 +28,7 @@ import org.lwjgl.util.Rectangle;
  *
  * @author ellie
  */
-public class Background extends Entity {
+public class Background extends Statics {
     private static final Logger LOG = Logger.getLogger(Background.class.getName());
     private float foregroundness;
     private int x,y,w,h;
@@ -47,14 +48,18 @@ public class Background extends Entity {
     public Background(int foregroundness, String relativeFilePath) {
         
         this.foregroundness = (float)foregroundness/10;
-        System.out.println("Foregroundness for bg " + 
-                            foregroundness + 
-                            " is: " + 
-                            this.foregroundness); 
+        
+        String[] s = {"", "" };
+        s[0] = Integer.toString(foregroundness);
+        s[1] = Float.toString(this.foregroundness);
+        LOG.log(Level.FINE, "Foregroundness for bg {0} is: {1}", s);
+        
+        
         x = 0;
         y = 0;        
         w = Display.getWidth() + 50;
         h = Display.getHeight() + 50;
+        
         if (foregroundness != 0) {
             extendedBG = new LinkedList<>();
             for (int i=0; i<10; i++) {
@@ -65,6 +70,25 @@ public class Background extends Entity {
             hitbox = new Rectangle(x,y,w,h);
         }
         
+    }
+    
+    public Background(String pngPath){
+        x = 0;
+        y = 0;        
+        w = Display.getWidth();
+        h = Display.getHeight();
+        
+        loadTexture(pngPath);
+        hitbox = new Rectangle(x,y,w,h);
+    }
+    
+    public Background(String pngPath, int repeatNum, int topLeft, float width, float height) {
+        super(repeatNum*(Display.getHeight()/2), 
+                0, 
+                Display.getHeight()/2, 
+                Display.getHeight());
+        spriteSize = 200f;
+        loadTiledTexture(pngPath);
     }
     
     private Background (String s, int x, int y, int w, int h) {

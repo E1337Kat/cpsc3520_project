@@ -37,7 +37,7 @@ public class IndieCD extends Pickups {
      * @param rand A random float to generate the location of the Entity.
      */
     public IndieCD (int num, float rand) {
-        super(PATH, (int)(rand*10)*num, Display.getHeight()-100-(int)(rand*10));
+        super(PATH, 256*num, Display.getHeight()-100-(int)(rand*10));
         
     } 
     

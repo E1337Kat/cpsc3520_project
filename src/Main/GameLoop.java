@@ -16,42 +16,55 @@
  */
 package Main;
 
+import Scenes.Menu;
+import Scenes.Overworld;
+import Scenes.Scene;
+import Scenes.Woods;
+import java.util.logging.Level;
+
+import java.util.logging.Logger;
+
+import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 
-import org.lwjgl.LWJGLException;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.util.glu.GLU;
 
-
-
-public class GameLoop
-{
+/**
+ * Gameloop for the game. It is abstracted so that this will be the same
+ * for any game made.
+ * @author Ellie Peterson
+ * @author Craig Tanis
+ */
+public class GameLoop {
     public static final int TARGET_FPS=100;
     public static final int SCR_WIDTH=800;
     public static final int SCR_HEIGHT=600;
+    private static final Logger LOG = Logger.getLogger(GameLoop.class.getName());
 
-    public static void main(String[] args) throws LWJGLException
-    {
+    /**
+     * Starts a new instance of the game loop. 
+     * @param args Any arguments that are passed to the game on startup.
+     * @throws LWJGLException A lwjgl exception for lwjgl stuff.
+     */
+    public static void main(String[] args) throws LWJGLException {
         initGL(SCR_WIDTH, SCR_HEIGHT);
         
         // hide the mouse cursor
         Mouse.setGrabbed(true);
 
         Menu gameMenu = new Menu();
-        gameMenu.addItem("Play", new Overworld());
+        gameMenu.addItem("Play", Overworld.getOverworld());
         gameMenu.addSpecial("Exit", Menu.DO_EXIT);
 
         Scene currScene = gameMenu;
 
 
-        while ( currScene.go() )
-        {
+        while ( currScene.go() ) {
             currScene = currScene.nextScene();
 
-            if (currScene == null)
-            {
+            if (currScene == null) {
                 currScene = gameMenu;
             }
         }
@@ -61,9 +74,13 @@ public class GameLoop
         Display.destroy();
     }
     
-
-    public static void initGL(int width, int height) throws LWJGLException
-    {
+    /**
+     * Initializes the OpenGL stuff to build the screen
+     * @param width The width to set to display to.
+     * @param height The height to set the display to.
+     * @throws LWJGLException Generic exception in lwjgl stuff.
+     */
+    public static void initGL(int width, int height) throws LWJGLException {
         // open window of appropriate size
         Display.setDisplayMode(new DisplayMode(width, height));
         Display.create();
@@ -86,9 +103,8 @@ public class GameLoop
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glLoadIdentity();
         GL11.glOrtho(0, width, height, 0, 1, -1);
-//         GLU.gluPerspective(90f, 1.333f, 2f, -2f);
+        // GLU.gluPerspective(90f, 1.333f, 2f, -2f);
         
-        // GL11.glTranslated(0, 0, -500);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glLoadIdentity();
     }

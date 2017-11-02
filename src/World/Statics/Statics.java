@@ -16,7 +16,6 @@
  */
 package World.Statics;
 
-import World.Entities.Entity;
 import World.WorldObject;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -38,6 +37,7 @@ public class Statics extends WorldObject {
     protected float wr, hr;
     protected float r=1,g=1,b=1;
     private boolean active = true;
+    protected float spriteSize;
     
     //********Constructors********//
     
@@ -111,6 +111,15 @@ public class Statics extends WorldObject {
             throw new RuntimeException("failed to load Texture.");
         }
     }
+    
+    public final void loadTiledTexture(String path) {
+        try {
+            texture = TextureLoader.getTexture("PNG", 
+                                             ResourceLoader.getResourceAsStream(path));
+        } catch (IOException e) {
+            throw new RuntimeException("failded to load texture.");
+        }
+    }
 
     /**
      * Sets the RGB value of the hitbox. 
@@ -182,6 +191,37 @@ public class Statics extends WorldObject {
         }
     }
     
+    public void drawTiled(float origin, float width, float height) {
+        float x=(float)hitbox.getX();
+        float y=(float)hitbox.getY();
+        float w=(float)hitbox.getWidth();
+        float h=(float)hitbox.getHeight();
+
+        // draw this rectangle using the loaded sprite
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getTextureID());
+        GL11.glColor3f(1, 1,1);
+
+        GL11.glBegin(GL11.GL_QUADS);
+
+        
+            GL11.glTexCoord2f( (origin*spriteSize)/texture.getTextureWidth() , (origin * spriteSize)/texture.getTextureHeight() );
+            GL11.glVertex2f(x, y);
+
+            GL11.glTexCoord2f( (origin*spriteSize + width*spriteSize)/texture.getTextureWidth(), (origin * spriteSize)/texture.getTextureHeight() );
+            GL11.glVertex2f(x+w, y);
+
+            GL11.glTexCoord2f( (origin*spriteSize + width*spriteSize)/texture.getTextureWidth(), (origin*spriteSize + height*spriteSize)/texture.getTextureHeight() );
+            GL11.glVertex2f(x+w, y+h);
+
+            GL11.glTexCoord2f( (origin*spriteSize)/texture.getTextureWidth() , (origin*spriteSize + height*spriteSize)/texture.getTextureHeight() );
+            GL11.glVertex2f(x, y+h);
+        
+        GL11.glEnd();
+
+        // unbind the sprite so that other objects can be drawn
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+    }
+    
     /**
      * Draws the Entity at the specified coordinates. Must be Overriden to use.
      * @param x The x coord to draw the Entity at.
@@ -199,6 +239,7 @@ public class Statics extends WorldObject {
      * @param other The other Entity to check against.
      * @return true if the entities are intersecting.
      */
+    @Override
     public boolean intersects(WorldObject other) {
         return hitbox.intersects(other.hitbox);
     }
@@ -208,6 +249,7 @@ public class Statics extends WorldObject {
      * @param other The other Entity to get the intersection with.
      * @return The rectangle representing the intersection.
      */
+    @Override
     public Rectangle intersection(WorldObject other) {
         Rectangle rval = new Rectangle();
         return hitbox.intersection(other.hitbox, rval);
@@ -234,45 +276,45 @@ public class Statics extends WorldObject {
 //     */
 //    public void onCollision(Entity other) {}
 
-    /**
-     * Returns if the Entity is active
-     * @return active.
-     */
-    public boolean isActive() {
-        return active;
-    }
-    
-    /**
-     * Gets the Entities x coordinate.
-     * @return The Entity's x coordinate.
-     */
-    public final int getX() {
-        return hitbox.getX();
-    }
-    
-    /**
-     * Gets the Entities y coodinate.
-     * @return The Entity's y coordinate.
-     */
-    public final int getY() {
-        return hitbox.getY();
-    }
-    
-    /**
-     * Gets the Entities width.
-     * @return The Entity's width.
-     */
-    public final int getWidth() {
-        return hitbox.getWidth();
-    }
-    
-    /**
-     * Gets the Entities height.
-     * @return The Entity's height.
-     */
-    public final int getHeight() {
-        return hitbox.getHeight();
-    }
+//    /**
+//     * Returns if the Entity is active
+//     * @return active.
+//     */
+//    public boolean isActive() {
+//        return active;
+//    }
+//    
+//    /**
+//     * Gets the Entities x coordinate.
+//     * @return The Entity's x coordinate.
+//     */
+//    public final int getX() {
+//        return hitbox.getX();
+//    }
+//    
+//    /**
+//     * Gets the Entities y coodinate.
+//     * @return The Entity's y coordinate.
+//     */
+//    public final int getY() {
+//        return hitbox.getY();
+//    }
+//    
+//    /**
+//     * Gets the Entities width.
+//     * @return The Entity's width.
+//     */
+//    public final int getWidth() {
+//        return hitbox.getWidth();
+//    }
+//    
+//    /**
+//     * Gets the Entities height.
+//     * @return The Entity's height.
+//     */
+//    public final int getHeight() {
+//        return hitbox.getHeight();
+//    }
     
     //*******PROTECTED MEMBERS*******//
 

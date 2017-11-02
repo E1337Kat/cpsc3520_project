@@ -25,7 +25,7 @@ import org.newdawn.slick.opengl.Texture;
  */
 public abstract class WorldObject {
     
-    protected Rectangle hitbox;
+    public Rectangle hitbox;
     protected Texture texture = null;
     
     /**
@@ -48,13 +48,45 @@ public abstract class WorldObject {
     }
     
     /**
-     * Gets the intersection between two onjects.
+     * Gets the intersection between two objects.
      * @param other The other Entity to get the intersection with.
      * @return The rectangle representing the intersection.
      */
     public Rectangle intersection(WorldObject other) {
         Rectangle l = new Rectangle();
         return hitbox.intersection(other.hitbox, l);
+    }
+    
+    /**
+     * Gets the Entities x coordinate.
+     * @return The Entity's x coordinate.
+     */
+    public final int getX() {
+        return hitbox.getX();
+    }
+    
+    /**
+     * Gets the Entities y coordinate.
+     * @return The Entity's y coordinate.
+     */
+    public final int getY() {
+        return hitbox.getY();
+    }
+    
+    /**
+     * Gets the Entities width.
+     * @return The Entity's width.
+     */
+    public final int getWidth() {
+        return hitbox.getWidth();
+    }
+    
+    /**
+     * Gets the Entities height.
+     * @return The Entity's height.
+     */
+    public final int getHeight() {
+        return hitbox.getHeight();
     }
     
     

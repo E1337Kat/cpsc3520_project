@@ -16,12 +16,14 @@
  */
 package Scenes;
 
+import Main.AudioManager;
 import World.Statics.Background;
-import World.Entities.Entity;
 import World.Statics.Ground;
 import World.Entities.Items.IndieCD;
 import World.Entities.Player;
+import World.Statics.LevelEnd;
 import java.awt.Font;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -40,10 +42,11 @@ import org.newdawn.slick.opengl.TextureImpl;
 public class Woods extends Scene {
     
     
-//    public static AudioManager audio = AudioManager.getInstance();
+    public static AudioManager audio = AudioManager.getInstance();
 
     public static final String PATH_TO_BG = "parallax_mountain_pack/layers/";
     
+    // Entities that exist on this level.
     private static Background background0;
     private static Background background1;
     private static Background background2;
@@ -54,13 +57,11 @@ public class Woods extends Scene {
     private static List<Ground> ground;
     private static List<IndieCD> musics;
     
-//    private float translate_y_2 = 0;
-//    private float translate_x_2 = 0;
-//    private float translate_y_1 = 0;
-//    private float translate_x_1 = 0;
+    private static LevelEnd levelEnd;
+    private boolean finLevel = false;
     
     private int x2,y2;
-    private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(Overworld.class.getName());
+    private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(Woods.class.getName());
     private final int d_width = Display.getWidth();
     private final int d_height = Display.getHeight();
     TrueTypeFont itemCountFont = new TrueTypeFont(new Font("Times New Roman", Font.BOLD, 24), true);
@@ -69,12 +70,11 @@ public class Woods extends Scene {
      * Creates a new level
      */
     public Woods() {
-        
-//        try {
-//            audio.loadSample("strum", "audio/188037__antumdeluge__guitar-strumming.wav");
-//        } catch (IOException e) {
-//            Logger.logMsg(Logger.ERROR, e.getMessage());
-//        }
+        try {
+            audio.loadSample("strum", "audio/188037__antumdeluge__guitar-strumming.wav");
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Error occured loading audio sample: {0}", e.getMessage());
+        }
         
         // Load Player
         player = new Player();
@@ -84,6 +84,8 @@ public class Woods extends Scene {
         background2 = new Background(2, PATH_TO_BG + "parallax-mountain-mountains.png");
         background3 = new Background(3, PATH_TO_BG + "parallax-mountain-trees.png");
         background4 = new Background(4, PATH_TO_BG + "parallax-mountain-foreground-trees.png");
+        
+        levelEnd = new LevelEnd(2560);
 
         // Load Ground tiles
         ground = new LinkedList<>();
@@ -92,7 +94,7 @@ public class Woods extends Scene {
         float f;
         for (int i = 0; i < 10; i++ ) {
             f = rand.nextFloat();
-            ground.add (new Ground(i, f, 64));
+            ground.add (new Ground(i, f));
             musics.add(new IndieCD(i*80, f));
         }
         localNatives = new IndieCD(50, rand.nextFloat());
@@ -103,25 +105,14 @@ public class Woods extends Scene {
     }
     
     @Override
+    public Scene nextScene() {
+        return Overworld.getOverworld();
+    }
+    
+    @Override
     public boolean drawFrame(float delta) {
         
-        /*I had commented out the multi threading code to see if that was 
-          introducing the performance issues, but it doesn't appeat to be. */
         
-        // Update the background tiles and other static entities asynchronously.
-        // BG doesn't actually need to be updated
-        Runnable updateE = () -> {
-            background0.update(delta);
-            background1.update(delta);
-            background2.update(delta);
-            background3.update(delta);
-            background4.update(delta);
-        };
-        
-        updateE.run();
-
-        Thread thread = new Thread(updateE);
-        thread.start();
         
         // Update player and pickups on main thread
         player.update(delta);
@@ -131,26 +122,29 @@ public class Woods extends Scene {
              // Update the other entities
             for  (Ground g : ground) {
                 if (g.intersects(player)){
-                    player.intersectGround(g);
+                    player.intersectObject(g);
                 }
             }
             
             for (IndieCD cd : musics) {
                 if (cd.intersects(player)) {
                     if (cd.pickupItem()) {
-//                        audio.play("strum");
+                        audio.play("strum");
                         player.addItem(cd);
-//                        cd.cleanUp();
                     }
                 }
             }
             
             if (localNatives.intersects(player)) {
                 if (localNatives.pickupItem()) {
-//                    audio.play("strum");
+                    audio.play("strum");
                     player.addItem(localNatives);
-//                    localNatives.cleanUp();
                 }
+            }
+            
+            if (levelEnd.intersects(player)) {
+                Overworld.comp[0] = true;
+                finLevel = true;
             }
         };
         
@@ -158,6 +152,10 @@ public class Woods extends Scene {
         
         Thread thread2 = new Thread(checkInter);
         thread2.start();
+        
+        if (finLevel) {
+            return false;
+        }
         
         // After updating and before drawing, we take the player's 
         // position and we 
@@ -184,27 +182,12 @@ public class Woods extends Scene {
 
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
-        /* Issue does not exist in draw method or translations*/
-//
-//        background0.draw();
-//        background1.draw();
-//        background2.draw();
-//        background3.draw();
-//        background4.draw();
-//        for  (Entity e : ground) {
-//            e.draw();
-//        }
-//
-//        for (IndieCD m : musics) {
-//            m.draw();
-//        }
-//        localNatives.draw();
-//        player.draw();
-        
 
-        // 50% Parallax scrolling
-        // Pushes current matrix used for screen operations, then
-        // translates it by half. 
+        /*
+            Here we have decided to implement parrallax scrolling using 
+            matrix rtanslations of various speeds for the bg, and constant 
+            for all but the player.
+        */
         
         GL11.glPushMatrix();
             GL11.glTranslatef(0, 0, 0);
@@ -277,9 +260,9 @@ public class Woods extends Scene {
 //                }
 //            }
             
-            GL11.glTranslatef(-(p_x-translate_x), -(p_y-translate_y-200), 0);
+            GL11.glTranslatef(-(p_x-translate_x), -(p_y-translate_y-100), 0);
             // Draw the other entities
-            for  (Entity e : ground) {
+            for  (Ground e : ground) {
                 e.draw();
             }
             
@@ -295,22 +278,20 @@ public class Woods extends Scene {
         //Add the Item count to the top left
         String s = "Items: " + player.getItemCount();
         TextureImpl.bindNone();
-        itemCountFont.drawString(100, 50, s, Color.yellow);
+        itemCountFont.drawString(40, 40, s, Color.yellow);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+        
+        String t = "Use the arrow keys! Space can also Jump, too!";
+        TextureImpl.bindNone();
+        itemCountFont.drawString(40, 60, t, Color.yellow);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
         
         x2 = (int)p_x;
         y2 = (int)p_y;
 
-        if (!Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return !Keyboard.isKeyDown(Keyboard.KEY_ESCAPE);
         
-//        return !Keyboard.isKeyDown(Keyboard.KEY_ESCAPE);
+        
     }
     
 }

@@ -16,6 +16,7 @@
  */
 package World.Entities;
 
+import Scenes.Overworld;
 import World.Statics.Ground;
 import World.Entities.Items.Pickups;
 import World.WorldObject;
@@ -62,6 +63,7 @@ public class Player extends InertialEntity {
     private int itemCount;
     
     private boolean hasDoubleJump = false;
+    
 
 
     /** 
@@ -84,6 +86,14 @@ public class Player extends InertialEntity {
         ySpriteCoord = 2;
         
         Keyboard.enableRepeatEvents(true);
+    }
+    
+    public Player(int x) {
+        super("sprites/heck.png", 64f, x, x, 0f);
+        xSpriteCoord = 0;
+        ySpriteCoord = 2;
+        
+        
     }
     
     /**
@@ -357,7 +367,7 @@ public class Player extends InertialEntity {
                         velocity.set(0, 0);
                         accel.set(0,0);
                         curr_force.set(0, 0);
-                        super.setY( ((Ground)intersect).getY() );
+                        super.setY( intersect.getY()-63 );
                         state = State.LEVEL;
                         break;
                     case NPC:
@@ -443,6 +453,86 @@ public class Player extends InertialEntity {
     }
     
     
+    public void updateMap(float delta) {
+        
+            
+        curr_force.set(0, 0);
+        accel.set(0,0);
+        velocity.set(0,0);
+        
+        while (Keyboard.next()) {
+            if (Keyboard.getEventKeyState()) {
+                switch (Keyboard.getEventKey()) {
+                    case Keyboard.KEY_RIGHT:
+                        if (Overworld.comp[0] ) {
+                            state = State.WALKING;
+                            moving = true;
+                            anim = Anim.WALK_RIGHT;
+                            // translate right once
+                            hitbox.translate(10, 7);
+                            if (hitbox.getX() >= 375 && hitbox.getY() >= 275) {
+                                hitbox.setX(375);
+                                hitbox.setY(275);
+                            }
+                        } else ;
+                        if (Overworld.comp[1]) {
+                            state = State.WALKING;
+                            moving = true;
+                            anim = Anim.WALK_RIGHT;
+                            // translate up to last.
+                            hitbox.translate(10, 7);
+                            if (hitbox.getX() >= 675 && hitbox.getY() >= 475) {
+                                hitbox.setX(675);
+                                hitbox.setY(475);
+                            }
+                        }   
+                        if (Overworld.comp[2]) {
+                            // game complete.
+                        }   
+                        break;
+                    case Keyboard.KEY_LEFT:
+                        if (Overworld.comp[0] || Overworld.comp[1]) {
+                            state = State.WALKING;
+                            moving = true;
+                            anim = Anim.WALK_LEFT;
+                            // translate right once
+                            hitbox.translate(-10, -7);
+                        } else ;
+                       
+                        if (hitbox.getX() <= 75 && hitbox.getY() <= 75) {
+                            hitbox.setX(75);
+                            hitbox.setY(75);
+                        }   
+                        break;
+                    default:
+                        xSpriteCoord = 0;
+                        state = State.LEVEL;
+                        moving = false;
+                        anim = Anim.IDLE_CENTER;
+                        break;
+                }
+            } 
+            
+            if (!Keyboard.getEventKeyState()) {
+                xSpriteCoord = 0;
+                state = State.LEVEL;
+                moving = false;
+                anim = Anim.IDLE_CENTER;
+            }
+        }
+        
+        if (state == State.WALKING) {
+            xSpriteCoord++;
+            if (xSpriteCoord >= 9)
+                xSpriteCoord = 0;
+        }
+        
+        curr_force.set(0, 0);
+        accel.set(0,0);
+        velocity.set(0,0);
+        setAnim(anim);
+    }
+    
     @Override
     public OBJECT_TYPE getType() {
         return OBJECT_TYPE.PLAYER;
@@ -460,10 +550,10 @@ public class Player extends InertialEntity {
     
     /**
      * Adds a ground entity which the player collides with.
-     * @param ground Intersecting ground tile.
+     * @param object Intersecting ground tile.
      */
-    public void intersectGround(Ground ground) {
-        this.entities.add(ground);
+    public void intersectObject(WorldObject object) {
+        this.entities.add(object);
         
     }
     

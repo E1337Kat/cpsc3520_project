@@ -31,9 +31,8 @@ public class Ground extends Statics {
      * Generate a new ground Entity that the player can walk on.
      * @param place For multiples, describes the location in a list this ground is at.
      * @param rand A random float to help in generation.
-     * @param playerHeight The height of the player, but this is not used, so idk. ¯\_(ツ)_/¯
      */
-    public Ground(int place, float rand, float playerHeight)
+    public Ground(int place, float rand)
     {
         groundNum = place;
         
@@ -47,7 +46,7 @@ public class Ground extends Statics {
         */
         
         loadTexture("sprites/ground.png");
-        hitbox = new Rectangle(place*256+ heck*10, 
+        hitbox = new Rectangle(place*256, 
                                 (int)(Display.getHeight() - (this.heck*10)), 
                                 256, 
                                 512);

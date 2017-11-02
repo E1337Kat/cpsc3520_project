@@ -16,14 +16,14 @@
  */
 package Main;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.logging.Logger;
+import org.lwjgl.openal.AL;
 import org.newdawn.slick.openal.Audio;
 import org.newdawn.slick.openal.AudioLoader;
 import org.newdawn.slick.openal.SoundStore;
 import org.newdawn.slick.util.ResourceLoader;
-import org.lwjgl.openal.AL;
-
-import java.util.HashMap;
-import java.io.IOException;
 
 /** A utility class for caching sounds from files and enabling the
  * straightforward triggering of those sounds (samples and loops)
@@ -31,10 +31,9 @@ import java.io.IOException;
  */
 public class AudioManager 
 {
-    private HashMap<String, AudioWrapper> sounds;
-    private enum AudioType { LOOP, SAMPLE };
     
     private static AudioManager instance;
+    private static final Logger LOG = Logger.getLogger(AudioManager.class.getName());
 
     /** @return the singleton AudioManager instance
      */
@@ -44,46 +43,7 @@ public class AudioManager
         return instance;
     }
 
-    /** A handle on a loaded audio object, to play the same sound repeatedly
-     * without having to look it up
-     */
-    public class AudioWrapper
-    {
-        private Audio sound;
-        private AudioType type;
-
-        private AudioWrapper(AudioType t, Audio a)
-        {
-            type = t;
-            sound = a;
-        }
-
-        /** play this sound at full volume
-         */
-        public void play()
-        {
-            play(1.0f);
-            
-        }
-        
-        /** Play this sound
-            @param vol value between 0.0 and 1.0 to specify relative volume of sound
-        */
-        public void play(float vol)
-        {
-            switch (type)
-            {
-             case LOOP:
-                 sound.playAsMusic(1.0f, vol, true);
-                 break;
-
-             case SAMPLE:
-                 sound.playAsSoundEffect(1.0f, vol, false);
-                 break;
-            }
-        }
-
-    }
+    private HashMap<String, AudioWrapper> sounds;
 
 
     private AudioManager()
@@ -92,9 +52,11 @@ public class AudioManager
     }
 
     
-    /** load a one-shot sample
-        @param name identifier for loaded sound
-        @param path path to file
+    /** 
+     * Load a one-shot sample
+     * @param name identifier for loaded sound
+     * @param path path to file
+     * @throws java.io.IOException throws when file is not found
     */
     public void loadSample(String name, String path) throws IOException
     {
@@ -105,9 +67,11 @@ public class AudioManager
         sounds.put(name, new AudioWrapper(AudioType.SAMPLE, tmp));
     }
     
-    /** load a looping music track
-        @param name identifier for loaded sound
-        @param path path to file
+    /** 
+     * Load a looping music track
+     * @param name identifier for loaded sound
+     * @param path path to file
+     * @throws java.io.IOException throws when file is not found
     */
     public void loadLoop(String name, String path) throws IOException
     {
@@ -119,8 +83,10 @@ public class AudioManager
     }
     
 
-    /** get sound associated with name identifier
-        @param name the loaded sound identifier
+    /** 
+     *  Get sound associated with name identifier
+     *  @param name the loaded sound identifier
+     *  @return The sound requested
     */
     public AudioWrapper get(String name)
     {
@@ -158,5 +124,46 @@ public class AudioManager
     public void destroy()
     {
         AL.destroy();
+    }
+    private enum AudioType { LOOP, SAMPLE }
+    /** A handle on a loaded audio object, to play the same sound repeatedly
+     * without having to look it up
+     */
+    public class AudioWrapper
+    {
+        private Audio sound;
+        private AudioType type;
+        
+        private AudioWrapper(AudioType t, Audio a)
+        {
+            type = t;
+            sound = a;
+        }
+        
+        /** play this sound at full volume
+         */
+        public void play()
+        {
+            play(1.0f);
+            
+        }
+        
+        /** Play this sound
+         * @param vol value between 0.0 and 1.0 to specify relative volume of sound
+         */
+        public void play(float vol)
+        {
+            switch (type)
+            {
+                case LOOP:
+                    sound.playAsMusic(1.0f, vol, true);
+                    break;
+                    
+                case SAMPLE:
+                    sound.playAsSoundEffect(1.0f, vol, false);
+                    break;
+            }
+        }
+        
     }
 }
