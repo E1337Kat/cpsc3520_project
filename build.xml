@@ -1,73 +1,145 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- You may freely edit this file. See commented blocks below for -->
-<!-- some examples of how to customize the build. -->
-<!-- (If you delete it and reopen the project it will be recreated.) -->
-<!-- By default, only the Clean and Build commands use this build script. -->
-<!-- Commands such as Run, Debug, and Test only use this build script if -->
-<!-- the Compile on Save feature is turned off for the project. -->
-<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
-<!-- in the project's Project Properties dialog box.-->
-<project name="cpsc3520_project" default="default" basedir=".">
-    <description>Builds, tests, and runs the project cpsc3520_project.</description>
-    <import file="nbproject/build-impl.xml"/>
-    <!--
+<project name="cpsc3520_project" default="compile" basedir=".">
+  <property name="src" location="src/" />
+  <property name="res" location="res/" />
+  <property name="build" location="build/" />
+  <property name="dist" location="dist/" />
+  <property name="lwjgl" location="lib/lwjgl-2.9.3/" />
+  <property name="slick" location="lib/slick-util/" />
 
-    There exist several targets which are by default empty and which can be 
-    used for execution of your tasks. These targets are usually executed 
-    before and after some main targets. They are: 
+  <path id="project.class.path">
+    <pathelement path="{$classpath}" />
+    <fileset dir="${lwjgl}">
+      <include name="jar/lwjgl.jar" />
+      <include name="jar/lwjgl_util.jar" />
+      <include name="jar/lwjgl_test.jar" />
+    </fileset>
+    <fileset dir="${slick}">
+      <include name="slick-util.jar" />
+      <include name="natives-windows.jar" />
+    </fileset>
+  </path>
 
-      -pre-init:                 called before initialization of project properties
-      -post-init:                called after initialization of project properties
-      -pre-compile:              called before javac compilation
-      -post-compile:             called after javac compilation
-      -pre-compile-single:       called before javac compilation of single file
-      -post-compile-single:      called after javac compilation of single file
-      -pre-compile-test:         called before javac compilation of JUnit tests
-      -post-compile-test:        called after javac compilation of JUnit tests
-      -pre-compile-test-single:  called before javac compilation of single JUnit test
-      -post-compile-test-single: called after javac compilation of single JUunit test
-      -pre-jar:                  called before JAR building
-      -post-jar:                 called after JAR building
-      -post-clean:               called after cleaning build products
+  <target name="init">
+    <mkdir dir="${build}" />
+  </target>
 
-    (Targets beginning with '-' are not intended to be called on their own.)
+  <target name="compile" depends="init,next-build-version" description="compile the source">
+    <javac srcdir="${src}" 
+           destdir="${build}" 
+           classpathref="project.class.path" 
+           includeantruntime="false"/>
+    <buildnumber />
+  </target>
+  
+  <target name="clean"
+          description="clean up">
+    <delete dir="${build}" />
+  </target>
 
-    Example of inserting an obfuscator after compilation could look like this:
+  <target name="clean-build" depends="clean,compile" description="Cleans and builds the project" />
 
-        <target name="-post-compile">
-            <obfuscate>
-                <fileset dir="${build.classes.dir}"/>
-            </obfuscate>
-        </target>
+  <target name="jar" description="Jars all required files" depends="clean-build">
+    <jar destfile="${build}/build.jar" >
+      <fileset dir="${res}" />
+      <fileset dir="${build}" />
 
-    For list of available properties check the imported 
-    nbproject/build-impl.xml file. 
+      <manifest>
+        <attribute name="Main-Class" value="Main.GameLoop" />
+        <attribute name="Class-Path" value=". lib/lwjgl.jar lib/lwjgl_util.jar lib/lwjgl_test.jar lib/slick-util.jar lib/natives-windows.jar" />
+      </manifest>
+    </jar>
 
+    <copy file="lib/lwjgl-2.9.3/jar/lwjgl.jar" todir="${build}/lib/" />
+    <copy file="lib/lwjgl-2.9.3/jar/lwjgl_util.jar" todir="${build}/lib/" />
+    <copy file="lib/lwjgl-2.9.3/jar/lwjgl_test.jar" todir="${build}/lib/" />
+    <copy file="lib/slick-util/slick-util.jar" todir="${build}/lib/" />
+    <copy file="lib/slick-util/natives-windows.jar" todir="${build}/lib/" />
+  </target>
 
-    Another way to customize the build is by overriding existing main targets.
-    The targets of interest are: 
+  <condition property="native" value="${lwjgl}/native/macosx">
+    <os family="mac" />
+  </condition>
 
-      -init-macrodef-javac:     defines macro for javac compilation
-      -init-macrodef-junit:     defines macro for junit execution
-      -init-macrodef-debug:     defines macro for class debugging
-      -init-macrodef-java:      defines macro for class execution
-      -do-jar:                  JAR building
-      run:                      execution of project 
-      -javadoc-build:           Javadoc generation
-      test-report:              JUnit report generation
+  <condition property="native" value="${lwjgl}/native/windows">
+    <os family="windows" />
+  </condition>
 
-    An example of overriding the target for project execution could look like this:
+  <target name="run" description="run the compiled code" depends="jar">
+    <property name="native" location="${lwjgl}/native/windows/" />
 
-        <target name="run" depends="cpsc3520_project-impl.jar">
-            <exec dir="bin" executable="launcher.exe">
-                <arg file="${dist.jar}"/>
-            </exec>
-        </target>
+    <java jar="${build}/build.jar"  fork="true" >
+      <sysproperty key="java.library.path" value="${native}" />
+      <!-- <sysproperty key="java.awt.headless" value="true" /> -->
 
-    Notice that the overridden target depends on the jar target and not only on 
-    the compile target as the regular run target does. Again, for a list of available 
-    properties which you can use, check the target you are overriding in the
-    nbproject/build-impl.xml file. 
+      <classpath refid="project.class.path" />
+      <classpath>
+        <pathelement path="build/" />
+      </classpath>
+    </java>
+  </target>
 
-    -->
+  <target name="run-build" depends="jar" description="Run code from current build">
+    <property name="native" location="${lwjgl}/native/windows/" />
+    
+    <java jar="${build}/build.jar" fork="true" >
+      <sysproperty key="java.library.path" value="C:/Users/Ellie/Development/cpsc3520_project/lib/lwjgl-2.9.3/native/windows" />
+
+      
+      <classpath refid="project.class.path" />
+      <classpath>
+        <pathelement path="build/" />
+      </classpath>
+    </java>
+  </target>
+
+  <target name="check-syntax" depends="init" description="check for errors">
+    <javac destdir="${build}" 
+           classpathref="project.class.path" 
+           includeantruntime="false">
+      <src path="${CHK_SOURCES}" />
+      <compilerarg value="-Xlint" />
+    </javac>
+  </target>
+
+  <target name="next-minor-version">
+    <property
+      name="header"
+      value="##Generated file - do not modify!"/>
+    <propertyfile file="version.properties" comment="${header}">
+      <entry key="product.build.minor"   type="int" default="1" operation="+" />
+      <entry key="product.build.date"    type="date" value="now" />
+    </propertyfile>
+  </target>
+
+  <target name="next-major-version">
+    <property
+      name="header"
+      value="##Generated file - do not modify!"/>
+    <propertyfile file="version.properties" comment="${header}">
+      <entry key="product.build.major"   type="int"  default="1" operation="+" />
+      <entry key="product.build.date"    type="date" value="now" />
+    </propertyfile>
+  </target>
+
+  <target name="next-patch-version">
+    <property
+      name="header"
+      value="##Generated file - do not modify!"/>
+    <propertyfile file="version.properties" comment="${header}">
+      <entry key="product.build.patch"   type="int"  default="1" operation="+" />
+      <entry key="product.build.date"    type="date" value="now" />
+    </propertyfile>
+  </target>
+
+  <target name="next-build-version">
+    <property
+      name="header"
+      value="##Generated file - do not modify!"/>
+    <propertyfile file="version.properties" comment="${header}">
+      <entry key="product.build.build"   type="int"  default="0" operation="+" />
+      <entry key="product.build.date"    type="date" value="now" />
+    </propertyfile>
+  </target>
+
 </project>

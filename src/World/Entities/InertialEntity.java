@@ -16,6 +16,7 @@
  */
 package World.Entities;
 
+import Main.IntegerOrderedPair;
 import World.Entities.Entity;
 import org.lwjgl.util.vector.Vector2f;
 
@@ -136,6 +137,20 @@ public abstract class InertialEntity extends Entity {
     public void addGravity()
     {                                                 
         addForce((Vector2f)new Vector2f(GRAVITY).scale(1f/mass));
+    }
+    
+    // unit vector
+    public void addGravityPoint(IntegerOrderedPair point)
+    {                
+        double gravX, gravY;
+        double y = point.getRight()-hitbox.getY();
+        double x = point.getLeft()-hitbox.getX();
+        
+        double theta = Math.atan(y/x);
+        
+        gravX = Math.cos(theta);
+        gravY = Math.sin(theta);
+        addForce((Vector2f)new Vector2f(.01f*(float)gravX, .01f*(float)gravY).scale(1f/mass));
     }
     
     /**

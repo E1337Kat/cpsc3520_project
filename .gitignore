@@ -31,3 +31,4 @@ hs_err_pid*
 
 # Folders to ignore
 /res/ignore/
+/lib/

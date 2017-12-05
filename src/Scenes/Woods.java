@@ -17,6 +17,7 @@
 package Scenes;
 
 import Main.AudioManager;
+// import World.WorldMap;
 import World.Statics.Background;
 import World.Statics.Ground;
 import World.Entities.Items.IndieCD;
@@ -41,7 +42,6 @@ import org.newdawn.slick.opengl.TextureImpl;
  */
 public class Woods extends Scene {
     
-    
     public static AudioManager audio = AudioManager.getInstance();
 
     public static final String PATH_TO_BG = "parallax_mountain_pack/layers/";
@@ -59,22 +59,28 @@ public class Woods extends Scene {
     
     private static LevelEnd levelEnd;
     private boolean finLevel = false;
+
+    // private WorldMap woodsMap;
     
     private int x2,y2;
     private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(Woods.class.getName());
     private final int d_width = Display.getWidth();
     private final int d_height = Display.getHeight();
     TrueTypeFont itemCountFont = new TrueTypeFont(new Font("Times New Roman", Font.BOLD, 24), true);
+
     
     /**
      * Creates a new level
      */
     public Woods() {
+        LOG.setLevel(Level.ALL);
         try {
             audio.loadSample("strum", "audio/188037__antumdeluge__guitar-strumming.wav");
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Error occured loading audio sample: {0}", e.getMessage());
         }
+
+        // woodsMap = new WorldMap(1000,1000);
         
         // Load Player
         player = new Player();
@@ -219,46 +225,6 @@ public class Woods extends Scene {
 
         GL11.glPushMatrix();
         
-//            if ( (-(((x2/d_width)-d_width)+translate_x_1)) <= 0 || (-(((x2/d_width)-d_width)+translate_x_1)) >= d_width ) {
-//                // Player is too close to left or right of screen.
-//                if ( (-(((y2/d_height)-d_height)+translate_y_1+100)) <= 0 || (-(((y2/d_height)-d_height)+translate_y_1+100)) >= d_height ) {
-//                    // Player is too close to top or bottom of screen.
-//                    GL11.glTranslatef(-(x2-translate_x_1), -(y2-translate_y_1-100), 0);
-//                } else { 
-//                    GL11.glTranslatef(-(x2-translate_x_1), -(y2-translate_y_1-100)/2, 0);
-////                    translate_y_2 = (y2-translate_y_1-100)/2;
-//                }
-//            } else {
-//                if ( (-(((y2/d_height)-d_height)+translate_y_1+100)) <= 0 || (-(((y2/d_height)-d_height)+translate_y_1+100)) >=  d_height ) {
-//                    // Player is too close to top or bottom of screen.
-//                    GL11.glTranslatef(-(x2-translate_x_1)/2, -(y2-translate_y_1-100), 0);
-////                    translate_x_2 = (x2-translate_x_1)/2;
-//                } else {
-//                    GL11.glTranslatef(-(x2-translate_x_1)/2, -(y2-translate_y_1-100)/2, 0);
-////                    translate_x_2 = (x2-translate_x_1)/2;
-////                    translate_y_2 = (y2-translate_y_1-100)/2;
-//                }
-//            }
-//            if ( -(x2-translate_x_1) <= (-((x2/(d_width/4))-(d_width/4)+translate_x_1)) || -(x2-translate_x_1) >= (-((x2/(3*(d_width/4)))-3*(d_width/4)+translate_x_1))  ) {
-//                // Player is too close to left or right of screen.
-//                if ( -(y2-translate_y_2-100) <= (-((y2/((d_height/4)+100))-((d_height/4)+100)+translate_y_1)) || -(y2-translate_y_1-100) >= (-((y2/((3*(d_height/4))+100))-(3*(d_height/4))+100+translate_y_1)) ) {
-//                    // Player is too close to top or bottom of screen.
-//                    GL11.glTranslatef(-(x2-translate_x_1), -(y2-translate_y_1-100), 0);
-//                } else { 
-//                    GL11.glTranslatef(-(x2-translate_x_1), -(y2-translate_y_1-100)/2, 0);
-////                    translate_y_2 = (y2-translate_y_1-100)/2;
-//                }
-//            } else {
-//                if ( -(y2-translate_y_2-100) <= (-((y2/((d_height/4)+100))-((d_height/4)+100)+translate_y_1)) || -(y2-translate_y_1-100) >= (-((y2/((3*(d_height/4))+100))-(3*(d_height/4))+100+translate_y_1)) ) {
-//                    // Player is too close to top or bottom of screen.
-//                    GL11.glTranslatef(-(x2-translate_x_1)/2, -(y2-translate_y_1-100), 0);
-////                    translate_x_2 = (x2-translate_x_1)/2;
-//                } else {
-//                    GL11.glTranslatef(-(x2-translate_x_1)/2, -(y2-translate_y_1-100)/2, 0);
-////                    translate_x_2 = (x2-translate_x_1)/2;
-////                    translate_y_2 = (y2-translate_y_1-100)/2;
-//                }
-//            }
             
             GL11.glTranslatef(-(p_x-translate_x), -(p_y-translate_y-100), 0);
             // Draw the other entities

@@ -20,9 +20,14 @@ import Scenes.Menu;
 import Scenes.Overworld;
 import Scenes.Scene;
 import Scenes.Woods;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Mouse;
@@ -38,9 +43,13 @@ import org.lwjgl.opengl.GL11;
  * @author Craig Tanis
  */
 public class GameLoop {
+    static private FileHandler fileTxt;
+    static private SimpleFormatter formatterTxt;
+    
     public static final int TARGET_FPS=100;
     public static final int SCR_WIDTH=800;
     public static final int SCR_HEIGHT=600;
+    
     private static final Logger LOG = Logger.getLogger(GameLoop.class.getName());
 
     /**
@@ -49,6 +58,38 @@ public class GameLoop {
      * @throws LWJGLException A lwjgl exception for lwjgl stuff.
      */
     public static void main(String[] args) throws LWJGLException {
+        // get the global logger to configure it
+        Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
+        logger.setLevel(Level.FINEST);
+        
+        try {
+            fileTxt = new FileHandler("game_log.log");
+            
+            // create a TXT formatter
+            formatterTxt = new SimpleFormatter();
+            fileTxt.setFormatter(formatterTxt);
+            logger.addHandler(fileTxt);
+        } catch (IOException e) {
+            File file = new File("game_log.log");
+            
+            try {
+                if (file.createNewFile()) {
+                    System.out.println("Saved from IOException.");
+                }
+                
+                // create a TXT formatter
+                formatterTxt = new SimpleFormatter();
+                fileTxt.setFormatter(formatterTxt);
+                logger.addHandler(fileTxt);
+            } catch (IOException e2) {
+                System.out.println("ERROR: Log file can not be created. Error occured at: " + e2);
+                System.out.println("Further Info: " + e);
+            }
+            
+            
+        }
+
         initGL(SCR_WIDTH, SCR_HEIGHT);
         
         // hide the mouse cursor

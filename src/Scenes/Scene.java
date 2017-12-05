@@ -26,7 +26,7 @@ import org.lwjgl.opengl.Display;
  */
 public abstract class Scene
 {
-    private final long delta = 1000/100;  // Fixed delta of 10
+    private final long delta = 10;  // Fixed delta of 10
     
     private boolean doExit = false;
     private int targetFPS = 100;

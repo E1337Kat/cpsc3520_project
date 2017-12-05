@@ -16,20 +16,26 @@
  */
 package World.Entities;
 
+import Main.HistoryStack;
+import Main.IntegerOrderedPair;
 import Scenes.Overworld;
 import World.Statics.Ground;
 import World.Entities.Items.Pickups;
 import World.WorldObject;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.Rectangle;
 import org.lwjgl.util.vector.Vector2f;
+
 
 /**
  * The player entity. This is the only entity in the game that is controlled by
@@ -42,6 +48,7 @@ public class Player extends InertialEntity {
     private static Map< Action , Integer > ControlMap ;
     private static ControlScheme control = ControlScheme.ARROWS;
     private static final Logger LOG = Logger.getLogger(Player.class.getName());
+    private static final int MAX_REWIND_TIME = 100; // In 10 milliseconds. How many movements should be stored.
     
     /**
      * Describes the entities that intersect the player at that moment
@@ -52,6 +59,14 @@ public class Player extends InertialEntity {
      * Describes the items currently in the player's possession.
      */
     private List<Pickups> items;
+
+    /** 
+     * holds a stack of the last movements/actions
+     */
+    private HistoryStack<RewindState> history;
+    private boolean hasRewind = true;
+    private RewindState rewindState;
+    private int rewindTime;
     
     
     private State state = State.FALLING;
@@ -59,6 +74,15 @@ public class Player extends InertialEntity {
     
     private final float staticFriction = 0.002f;
     private final float airFriction = 0.0001f;
+    
+    private float leftforce = -1.3f;
+    private float rightforce = 1.3f;
+    private float jumpforce = -9.0f;
+    private float jumpleftforce = -0.5f;
+    private float jumprightforce = 0.5f;
+    private float doublejumpforce = 0;
+    private float fallingforce = 7.5f;
+
     private int jumpTime;
     private int itemCount;
     
@@ -84,8 +108,12 @@ public class Player extends InertialEntity {
         setY(getY()+(Display.getHeight()-10));
         xSpriteCoord = 0;
         ySpriteCoord = 2;
+
+        history = new HistoryStack<>(200);
         
         Keyboard.enableRepeatEvents(true);
+        
+        LOG.setLevel(Level.ALL);
     }
     
     public Player(int x) {
@@ -93,7 +121,7 @@ public class Player extends InertialEntity {
         xSpriteCoord = 0;
         ySpriteCoord = 2;
         
-        
+        LOG.setLevel(Level.ALL);
     }
     
     /**
@@ -106,6 +134,7 @@ public class Player extends InertialEntity {
         LOG.log(Level.FINE, 
                 "Player momentum on update: {0}", 
                 momentumForce().toString());
+
         
         WorldObject intersect = null;
         
@@ -119,7 +148,7 @@ public class Player extends InertialEntity {
                 break;
             }
         }
-        
+
         //<editor-fold defaultstate="collapsed" desc="keypress">
         // Determines the keyboard input to use. Sets the Action to true 
         // if the key is used, and false if not used.
@@ -141,6 +170,9 @@ public class Player extends InertialEntity {
                     case Keyboard.KEY_DOWN:
                         ActionMap.put(Action.CROUCH, true);
                         break;
+                    case Keyboard.KEY_R:
+                        ActionMap.put(Action.REWIND, true);
+                        break;
                 }
             }
             if (!Keyboard.getEventKeyState()) {
@@ -160,10 +192,13 @@ public class Player extends InertialEntity {
                     case Keyboard.KEY_DOWN:
                         ActionMap.put(Action.CROUCH, false);
                         break;
+                    case Keyboard.KEY_R:
+                        ActionMap.put(Action.REWIND, false);
+                        break;
                 }
             }
         }
-//</editor-fold>
+        //</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="LEVEL STATE">
         /*
@@ -206,17 +241,24 @@ public class Player extends InertialEntity {
                         if (ActionMap.get(Action.LEFT)) {
                             anim = Anim.WALK_LEFT;
                             moving = true;
-                            addForce(new Vector2f(-1.5f,0));
+                            addForce(new Vector2f(leftforce,0));
                             LOG.log(Level.FINEST, 
                                     "Player momentum on walk left: {0}", 
                                     momentumForce().toString());
                         } else if (ActionMap.get(Action.RIGHT)) {
                             moving = true;
                             anim = Anim.WALK_RIGHT;
-                            addForce(new Vector2f(1.5f,0));
+                            addForce(new Vector2f(rightforce,0));
                             LOG.log(Level.FINEST, 
                                     "Player momentum on walk right: {0}", 
                                     momentumForce().toString());
+                        } else if (ActionMap.get(Action.REWIND) && hasRewind) {
+                            // rewindState = new RewindState(this.velocity, this.getX(), this.getY(), state, jumpTime, hasDoubleJump);
+                            state = State.REWINDING;
+                            hasRewind = false;
+                            moving = true;
+                            anim = Anim.JUMP_CENTER;
+                            break;
                         } else {
                             curr_force.set(0,0);
                             accel.set(0,0);
@@ -234,7 +276,7 @@ public class Player extends InertialEntity {
                         
                         // jump
                         if (ActionMap.get(Action.JUMP)) {
-                            jumpTime = 7;
+                            jumpTime = 5;
                             state = State.JUMPING;
                         }
                         break;
@@ -285,17 +327,23 @@ public class Player extends InertialEntity {
             if (ActionMap.get(Action.LEFT)) {
                 anim = Anim.JUMP_LEFT;
                 moving = true;
-                addForce(new Vector2f(-.5f,0));
+                addForce(new Vector2f(jumpleftforce,0));
                 LOG.log(Level.FINEST, 
                         "Player momentum on jump left: {0}", 
                         momentumForce().toString());
             } else if (ActionMap.get(Action.RIGHT)) {
                 anim = Anim.JUMP_RIGHT;
                 moving = true;
-                addForce(new Vector2f(.5f,0));
+                addForce(new Vector2f(jumprightforce,0));
                 LOG.log(Level.FINEST, 
                         "Player momentum on jump right: {0}", 
                         momentumForce().toString());
+            } else if (ActionMap.get(Action.REWIND) && hasRewind) {
+                // rewindState = new RewindState(this.velocity, this.getX(), this.getY(), state, jumpTime, hasDoubleJump);
+                state = State.REWINDING;
+                hasRewind = false;
+                moving = true;
+                anim = Anim.JUMP_CENTER;
             } else {
                 anim = Anim.JUMP_CENTER;
                 moving = true;
@@ -311,7 +359,7 @@ public class Player extends InertialEntity {
             if (xSpriteCoord >= 7)
                 xSpriteCoord =0;
 
-            addForce(0,-10.0f);
+            addForce(0,jumpforce);
             jumpTime--;
 
             // check the current force's y vector.
@@ -387,17 +435,23 @@ public class Player extends InertialEntity {
                 if (ActionMap.get(Action.LEFT)) {
                     anim = Anim.JUMP_LEFT;
                     moving = true;
-                    addForce(new Vector2f(-.5f,0));
+                    addForce(new Vector2f(jumpleftforce,0));
                     LOG.log(Level.FINEST, 
                             "Player momentum on falling to the left: {0}", 
                             momentumForce().toString());
                 } else if (ActionMap.get(Action.RIGHT)) {
                     anim = Anim.JUMP_RIGHT;
                     moving = true;
-                    addForce(new Vector2f(.5f,0));
+                    addForce(new Vector2f(jumprightforce,0));
                     LOG.log(Level.FINEST, 
                             "Player momentum on falling to the right: {0}", 
                             momentumForce().toString());
+                } else if (ActionMap.get(Action.REWIND) && hasRewind) {
+                    // rewindState = new RewindState(this.velocity, this.getX(), this.getY(), state, jumpTime, hasDoubleJump);
+                    state = State.REWINDING;
+                    hasRewind = false;
+                    moving = true;
+                    anim = Anim.JUMP_CENTER;
                 } else {
                     anim = Anim.JUMP_CENTER;
                     moving = true;
@@ -416,19 +470,17 @@ public class Player extends InertialEntity {
                     if (ActionMap.get(Action.JUMP)) {
                         LOG.log(Level.FINEST, 
                                 "Player using their second jump");
-//                        velocity.set(0, 0);
-//                        accel.set(0, 0);
-//                        curr_force.set(0,0);
+
                         LOG.log(Level.FINEST, 
                                 "Player momentum on second jump: {0}", 
                                 momentumForce().toString());
-                        jumpTime = 7;
+                        jumpTime = 4;
                         state = State.JUMPING;
                         this.hasDoubleJump = false;
                     }
                 }
                 
-                addForce(0,7.5f);
+                addForce(0,fallingforce);
                 addGravity();
 
                 // check if player falls off the level
@@ -445,14 +497,30 @@ public class Player extends InertialEntity {
 
         }
         //</editor-fold>
+        
+        if (state != state.REWINDING) {
+            history.push(new RewindState(this.velocity, this.getX(), this.getY(), state, jumpTime, hasDoubleJump));
+        }
 
-        
-        
+        if (state == State.REWINDING) {
+            System.out.println("HistorySize on rewind: " + history.size());
+            RewindState action = history.pop();
+            if (history.size() > 0) {
+                hitbox.setLocation(action.player_x, action.player_y);
+            } else {
+                state = action.state;
+                hasDoubleJump = action.prev_hasDoubleJump;
+                velocity = action.velocity;
+                jumpTime = action.prev_jumpTime;
+                hasRewind = true;
+            }
+            return;
+        }
+
         setAnim(anim);
         super.update(delta);
     }
-    
-    
+
     public void updateMap(float delta) {
         
             
@@ -465,7 +533,6 @@ public class Player extends InertialEntity {
                 switch (Keyboard.getEventKey()) {
                     case Keyboard.KEY_RIGHT:
                         if (Overworld.comp[0] ) {
-                            state = State.WALKING;
                             moving = true;
                             anim = Anim.WALK_RIGHT;
                             // translate right once
@@ -476,7 +543,6 @@ public class Player extends InertialEntity {
                             }
                         } else ;
                         if (Overworld.comp[1]) {
-                            state = State.WALKING;
                             moving = true;
                             anim = Anim.WALK_RIGHT;
                             // translate up to last.
@@ -492,7 +558,6 @@ public class Player extends InertialEntity {
                         break;
                     case Keyboard.KEY_LEFT:
                         if (Overworld.comp[0] || Overworld.comp[1]) {
-                            state = State.WALKING;
                             moving = true;
                             anim = Anim.WALK_LEFT;
                             // translate right once
@@ -506,7 +571,6 @@ public class Player extends InertialEntity {
                         break;
                     default:
                         xSpriteCoord = 0;
-                        state = State.LEVEL;
                         moving = false;
                         anim = Anim.IDLE_CENTER;
                         break;
@@ -515,13 +579,12 @@ public class Player extends InertialEntity {
             
             if (!Keyboard.getEventKeyState()) {
                 xSpriteCoord = 0;
-                state = State.LEVEL;
                 moving = false;
                 anim = Anim.IDLE_CENTER;
             }
         }
         
-        if (state == State.WALKING) {
+        if (anim == Anim.WALK_LEFT || anim == Anim.WALK_RIGHT) {
             xSpriteCoord++;
             if (xSpriteCoord >= 9)
                 xSpriteCoord = 0;
@@ -660,18 +723,19 @@ public class Player extends InertialEntity {
         ActionMap.put(Action.RIGHT, false);
         ActionMap.put(Action.JUMP, false);
         ActionMap.put(Action.CROUCH, false);
+        ActionMap.put(Action.REWIND, false);
     }
     
     /**
      * Player interaction state.
      */
-    private static enum State  { LEVEL, JUMPING, FALLING, WALKING }
+    private static enum State  { LEVEL, JUMPING, FALLING, WALKING, REWINDING }
     
     /**
      * Describes the action which a player character can take. Like state, 
      * but used to associate controls with an action
      */
-    private static enum Action { LEFT, RIGHT, JUMP, CROUCH }
+    private static enum Action { LEFT, RIGHT, JUMP, CROUCH, REWIND }
     
     /**
      * Describes the control scheme to use. Ideally this would exist in the 
@@ -680,4 +744,32 @@ public class Player extends InertialEntity {
      * for player choice.
      */
     private static enum ControlScheme { WASD, ESDF, ARROWS, NUMPAD }
+
+    private static class RewindState {
+        private int curr_element = 0;
+        public Vector2f velocity;
+        public int player_x;
+        public int player_y;
+        public State state;
+        private int prev_jumpTime;
+        private boolean prev_hasDoubleJump = false;
+
+        public RewindState() {}
+
+        public RewindState(Vector2f v, int x, int y, State s, int jumpTime, boolean hasDoubleJump) {
+            velocity = v;
+            player_x = x;
+            player_y = y;
+            state = s;
+            prev_jumpTime = jumpTime;
+            prev_hasDoubleJump = hasDoubleJump;
+            curr_element = 6;
+        }
+
+        public Object[] popState() {
+            return new Object[]{velocity, player_x, player_y, state, prev_jumpTime, prev_hasDoubleJump};
+        }
+    }
 }
+
+
