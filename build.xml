@@ -27,6 +27,8 @@
   <target name="compile" depends="init,next-build-version" description="compile the source">
     <javac srcdir="${src}" 
            destdir="${build}" 
+           verbose="false"
+           debug="true"
            classpathref="project.class.path" 
            includeantruntime="false"/>
     <buildnumber />
@@ -79,7 +81,21 @@
     </java>
   </target>
 
-  <target name="run-build" depends="jar" description="Run code from current build">
+  <target name="run-new-build" depends="jar" description="Build and run new code.">
+    <property name="native" location="${lwjgl}/native/windows/" />
+    
+    <java jar="${build}/build.jar" fork="true" >
+      <sysproperty key="java.library.path" value="C:/Users/Ellie/Development/cpsc3520_project/lib/lwjgl-2.9.3/native/windows" />
+
+      
+      <classpath refid="project.class.path" />
+      <classpath>
+        <pathelement path="build/" />
+      </classpath>
+    </java>
+  </target>
+
+  <target name="run-build" description="Run current build">
     <property name="native" location="${lwjgl}/native/windows/" />
     
     <java jar="${build}/build.jar" fork="true" >
@@ -107,7 +123,8 @@
       name="header"
       value="##Generated file - do not modify!"/>
     <propertyfile file="version.properties" comment="${header}">
-      <entry key="product.build.minor"   type="int" default="1" operation="+" />
+      <entry key="product.build.minor"   type="int"  default="1" operation="+" />
+      <entry key="product.build.patch"   type="int"  value="0"   />
       <entry key="product.build.date"    type="date" value="now" />
     </propertyfile>
   </target>
@@ -118,6 +135,8 @@
       value="##Generated file - do not modify!"/>
     <propertyfile file="version.properties" comment="${header}">
       <entry key="product.build.major"   type="int"  default="1" operation="+" />
+      <entry key="product.build.minor"   type="int"  value="0"   />
+      <entry key="product.build.patch"   type="int"  value="0"   />
       <entry key="product.build.date"    type="date" value="now" />
     </propertyfile>
   </target>

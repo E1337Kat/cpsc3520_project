@@ -18,6 +18,8 @@ package World.Statics;
 
 import org.lwjgl.opengl.Display;
 
+import World.Entities.Player;
+
 /**
  *
  * @author Ellie
@@ -25,6 +27,8 @@ import org.lwjgl.opengl.Display;
 public class LevelEnd extends Statics{
 
     public int levelNum;
+    private boolean trackPlayer = false;
+    private Player player;
     
     
     public LevelEnd(int levelLength) {
@@ -35,5 +39,28 @@ public class LevelEnd extends Statics{
     public LevelEnd(int x, int y, int levelNum){
         super(x,y,64,64);
         this.levelNum = levelNum;
+    }
+
+    /** 
+     * Default constructor that creates a 1x1 hitbox to test against.
+     * this hitbox could be placed in top corner to help translate 
+     * viewport coordinates to world coordinates.
+     */
+    public LevelEnd(Player p) {
+        super(0,0,1,1);
+        player = p;
+    }
+
+    public void setOnPlayer(boolean val) {
+        trackPlayer = val;
+    }
+
+    @Override
+    public void draw() {
+        if (trackPlayer) {
+            setX(player.getX());
+            setY(player.getY());
+        }
+        super.draw();
     }
 }

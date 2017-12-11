@@ -28,35 +28,80 @@ public class GravPoint extends Entity {
 
     private static float grav_strength = 1.0f;
     private int x_coord, y_coord;
-    private float theta;
 
     public GravPoint(int x, int y) {
-
+        super("sprites/grav.png", 10, 10, x, y);
     }
 
     public GravPoint(int x, int y, String spritePath) {
-
+        super(spritePath, 10, 10, x, y);
     }
 
     public GravPoint(int x, int y, float strength) {
-
+        super("sprites/grav.png", 10, 10, x, y);
+        grav_strength = strength;
     }
 
     public GravPoint(int x, int y, float strength, String spritePath) {
-
+        super(spritePath, 10, 10, x, y);
+        grav_strength = strength;
     }
 
     /**
      * Finds the theta (angle) to a GravPoint from the given ccoordinates.
      * Note that the angle is flipped as (0,0) is in top left instead of bottom left.
      */
-    public float getAngle(int init_x, int init_y){
-        theta = (float)Math.atan(init_y-y_coord/init_x-x_coord);
+    public double getAngle(int init_x, int init_y){
+        double theta;
+        int x = -Math.abs(init_x-x_coord);
+        int y = Math.abs(init_y-y_coord);
+
+        if (x != 0) {
+            theta = Math.atan(y/x);
+        } else {
+            theta = 0;
+        }
+
         return theta;
     }
 
-    // public Vector2f getMagnitudeVector() {
+    public double getDistance(int init_x, int init_y) {
+        double distance = Math.sqrt( (init_x+getX())^2 + (init_y+getY())^2 );
+        return distance;
+    }
 
-    // }
+    public Vector2f getGravVector(double distance, double theta) {
+        // short-circuit eval for theta... if you have no angle, then there is no vector.
+        if (theta == 0) {
+            return new Vector2f(0, 0);
+        }
+
+        double gravWeight = 1/distance;
+
+        double x_vec = gravWeight * Math.cos(theta);
+        double y_vec = gravWeight * Math.sin(theta);
+
+        return new Vector2f((float)x_vec, (float)y_vec);
+    }
+
+    public Vector2f getGravVector(InertialEntity movable) {
+        int x = movable.getX();
+        int y = movable.getY();
+
+        double theta = getAngle(x, y);
+        // short-circuit eval for theta... if you have no angle, then there is no vector.
+        if (theta == 0) {
+            return new Vector2f(0, 0);
+        }
+
+        double dist = getDistance(x, y);
+
+        double gravWeight = (grav_strength*movable.mass)/(dist*dist) ;
+
+        double x_vec = gravWeight * Math.cos(theta);
+        double y_vec = gravWeight * Math.sin(theta);
+
+        return new Vector2f((float)x_vec, (float)y_vec);
+    }
 
 }

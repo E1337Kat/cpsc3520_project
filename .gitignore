@@ -29,6 +29,9 @@ hs_err_pid*
 # GIMP files
 *.xcf
 
+# Backup files
+*.bak
+
 # Folders to ignore
 /res/ignore/
 /lib/

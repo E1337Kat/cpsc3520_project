@@ -22,11 +22,13 @@ import Scenes.Scene;
 import Scenes.Woods;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
-
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 
 import org.lwjgl.LWJGLException;
@@ -58,18 +60,37 @@ public class GameLoop {
      * @throws LWJGLException A lwjgl exception for lwjgl stuff.
      */
     public static void main(String[] args) throws LWJGLException {
+        
         // get the global logger to configure it
         Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-        logger.setLevel(Level.FINEST);
+        Handler consHandler = new ConsoleHandler();
+        consHandler.setLevel(Level.INFO);
+        logger.addHandler(consHandler);
         
+        // create a TXT formatter
+        formatterTxt = new SimpleFormatter() {
+            private static final String format = "[%1$tT] [%2$-7s] [%3$s.%4$s] %5$s %n";
+  
+            @Override
+            public synchronized String format(LogRecord lr) {
+                return String.format(format,
+                        new Date(lr.getMillis()),
+                        lr.getLevel().getLocalizedName(),
+                        lr.getSourceClassName(),
+                        lr.getSourceMethodName(),
+                        lr.getMessage(),
+                        lr.getParameters()
+                );
+            }
+        };
+
         try {
             fileTxt = new FileHandler("game_log.log");
             
-            // create a TXT formatter
-            formatterTxt = new SimpleFormatter();
             fileTxt.setFormatter(formatterTxt);
             logger.addHandler(fileTxt);
+            fileTxt.setLevel(Level.ALL);
         } catch (IOException e) {
             File file = new File("game_log.log");
             
@@ -78,17 +99,16 @@ public class GameLoop {
                     System.out.println("Saved from IOException.");
                 }
                 
-                // create a TXT formatter
-                formatterTxt = new SimpleFormatter();
                 fileTxt.setFormatter(formatterTxt);
                 logger.addHandler(fileTxt);
+                fileTxt.setLevel(Level.ALL);
             } catch (IOException e2) {
-                System.out.println("ERROR: Log file can not be created. Error occured at: " + e2);
-                System.out.println("Further Info: " + e);
+                System.err.println("ERROR: Log file can not be created. Error occured at: " + e2);
+                System.err.println("Further Info: " + e);
             }
-            
-            
         }
+        logger.setLevel(Level.FINE);
+
 
         initGL(SCR_WIDTH, SCR_HEIGHT);
         

@@ -291,7 +291,7 @@ public class Statics extends WorldObject {
 //    public final int getX() {
 //        return hitbox.getX();
 //    }
-//    
+   
 //    /**
 //     * Gets the Entities y coodinate.
 //     * @return The Entity's y coordinate.
