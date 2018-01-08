@@ -45,6 +45,7 @@
     <jar destfile="${build}/build.jar" >
       <fileset dir="${res}" />
       <fileset dir="${build}" />
+      <fileset file="README.md" />
 
       <manifest>
         <attribute name="Main-Class" value="Main.GameLoop" />
@@ -70,7 +71,7 @@
   <target name="run" description="run the compiled code" depends="jar">
     <property name="native" location="${lwjgl}/native/windows/" />
 
-    <java jar="${build}/build.jar"  fork="true" >
+    <java jar="${dist}/build.jar"  fork="true" >
       <sysproperty key="java.library.path" value="${native}" />
       <!-- <sysproperty key="java.awt.headless" value="true" /> -->
 
@@ -80,6 +81,21 @@
       </classpath>
     </java>
   </target>
+
+  <target name="build-dist" depends="jar" description="Build and run new code.">
+    <property name="native" location="${lwjgl}/native/windows/" />
+    
+    <java jar="${dist}/build.jar" fork="true" >
+      <sysproperty key="java.library.path" value="C:/Users/Ellie/Development/cpsc3520_project/lib/lwjgl-2.9.3/native/windows" />
+
+      
+      <classpath refid="project.class.path" />
+      <classpath>
+        <pathelement path="build/" />
+      </classpath>
+    </java>
+  </target>
+
 
   <target name="run-new-build" depends="jar" description="Build and run new code.">
     <property name="native" location="${lwjgl}/native/windows/" />

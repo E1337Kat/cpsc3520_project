@@ -28,6 +28,7 @@ import org.lwjgl.opengl.GL11;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.TrueTypeFont;
+import org.newdawn.slick.opengl.TextureImpl;
 
 /**
  * The main Menu scene for the game.
@@ -37,6 +38,8 @@ import org.newdawn.slick.TrueTypeFont;
 public class Menu extends Scene {
     public static final int DO_EXIT=0;
     private static final Logger LOG = Logger.getLogger(Menu.class.getName());
+    
+    private TrueTypeFont menuFont = new TrueTypeFont(new Font("Times New Roman", Font.BOLD, 24), true);
     
     // these menu items
     private List<Item> items;
@@ -138,17 +141,18 @@ public class Menu extends Scene {
         float spacing = Display.getHeight()/(items.size() + 4);
         float offset = 2*spacing;
 
-        TrueTypeFont menuFont = new TrueTypeFont(new Font("Times New Roman", Font.BOLD, 24), true);
-
         for (int i=0; i<items.size(); i++) {
             if (i == currItem) {
 
                 // GL11.glPushMatrix();
                 // GL11.glScalef(1f,1.5f,1);
+                
+                TextureImpl.bindNone();
                 menuFont.drawString(Display.getWidth()/2, offset, items.get(i).label, Color.yellow);
                 // GL11.glPopMatrix();
             }
             else {
+                TextureImpl.bindNone();
                 menuFont.drawString(Display.getWidth()/2, offset, items.get(i).label);
             }
             offset += spacing;
